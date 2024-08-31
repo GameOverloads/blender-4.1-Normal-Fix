@@ -128,7 +128,7 @@ ccl_device
       ClosureType distribution = (ClosureType)data_node2.y;
       ClosureType subsurface_method = (ClosureType)data_node2.z;
 
-      float3 valid_reflection_N = maybe_ensure_valid_specular_reflection(sd, N);
+      float3 valid_reflection_N = N;
       float3 coat_normal = stack_valid(coat_normal_offset) ?
                                stack_load_float3(stack, coat_normal_offset) :
                                sd->N;
@@ -213,7 +213,7 @@ ccl_device
 
       /* Second layer: Coat */
       if (coat_weight > CLOSURE_WEIGHT_CUTOFF) {
-        coat_normal = maybe_ensure_valid_specular_reflection(sd, coat_normal);
+        coat_normal = coat_normal;
         if (reflective_caustics) {
           ccl_private MicrofacetBsdf *bsdf = (ccl_private MicrofacetBsdf *)bsdf_alloc(
               sd, sizeof(MicrofacetBsdf), coat_weight * weight);
@@ -388,7 +388,7 @@ ccl_device
 
         bssrdf->radius = rgb_to_spectrum(max(subsurface_radius * subsurface_scale, zero_float3()));
         bssrdf->albedo = rgb_to_spectrum(clamped_base_color);
-        bssrdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+        bssrdf->N = N;
         bssrdf->alpha = sqr(roughness);
         /* IOR is clamped to [1.01..3.8] inside bssrdf_setup */
         bssrdf->ior = eta;
@@ -444,7 +444,7 @@ ccl_device
           sd, sizeof(DiffuseBsdf), weight);
 
       if (bsdf) {
-        bsdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+        bsdf->N = N;
         sd->flag |= bsdf_translucent_setup(bsdf);
       }
       break;
@@ -472,7 +472,7 @@ ccl_device
 
       float roughness = sqr(param1);
 
-      bsdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+      bsdf->N = N;
       bsdf->ior = 1.0f;
 
       /* compute roughness */
@@ -531,7 +531,7 @@ ccl_device
           sd, sizeof(MicrofacetBsdf), weight);
 
       if (bsdf) {
-        bsdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+        bsdf->N = N;
         bsdf->T = zero_float3();
 
         float eta = fmaxf(param2, 1e-5f);
@@ -575,7 +575,7 @@ ccl_device
                            NULL;
 
       if (bsdf && fresnel) {
-        bsdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+        bsdf->N = N;
         bsdf->T = zero_float3();
 
         float ior = fmaxf(param2, 1e-5f);
@@ -816,7 +816,7 @@ ccl_device
           sd, sizeof(HairBsdf), weight);
 
       if (bsdf) {
-        bsdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+        bsdf->N = N;
         bsdf->roughness1 = param1;
         bsdf->roughness2 = param2;
         bsdf->offset = -stack_load_float(stack, data_node.z);
@@ -853,7 +853,7 @@ ccl_device
       if (bssrdf) {
         bssrdf->radius = rgb_to_spectrum(stack_load_float3(stack, data_node.z) * param1);
         bssrdf->albedo = closure_weight;
-        bssrdf->N = maybe_ensure_valid_specular_reflection(sd, N);
+        bssrdf->N = N;
         bssrdf->ior = param2;
         bssrdf->alpha = 1.0f;
         bssrdf->anisotropy = stack_load_float(stack, data_node.w);
